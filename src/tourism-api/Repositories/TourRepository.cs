@@ -108,6 +108,39 @@ public class TourRepository
             throw;
         }
     }
+    public int CountAllByGuide(int guideId)
+    {
+        try
+        {
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            string query = "SELECT COUNT(*) FROM Tours WHERE GuideId =@GuideId";
+            using SqliteCommand command = new SqliteCommand(query, connection);
+            command.Parameters.AddWithValue("@GuideId", guideId);
+            return Convert.ToInt32(command.ExecuteScalar());
+        }
+        catch (SqliteException ex)
+        {
+            Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
+            throw;
+        }
+        catch (FormatException ex)
+        {
+            Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Neočekivana greška: {ex.Message}");
+            throw;
+        }
+    }
 
     public List<Tour> GetByGuide(int guideId)
     {
@@ -120,7 +153,7 @@ public class TourRepository
 
             string query = @$"
                     SELECT t.Id, t.Name, t.Description, t.DateTime, t.MaxGuests, t.Status,
-                           u.Id AS GuideId, u.Username 
+                           u.Id AS GuideId, u.Username  
                     FROM Tours t 
                     INNER JOIN Users u ON t.GuideId = u.Id
                     WHERE t.GuideId = @GuideId";
@@ -139,7 +172,12 @@ public class TourRepository
                     DateTime = Convert.ToDateTime(reader["DateTime"]),
                     MaxGuests = Convert.ToInt32(reader["MaxGuests"]),
                     Status = reader["Status"].ToString(),
-                    GuideId = Convert.ToInt32(reader["GuideId"])
+                    GuideId = Convert.ToInt32(reader["GuideId"]),
+                    Guide = new User
+                    {
+                        Id = Convert.ToInt32(reader["GuideId"]),
+                        Username = reader["Username"].ToString()
+                    }
                 });
             }
 
