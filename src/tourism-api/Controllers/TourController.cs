@@ -21,8 +21,16 @@ public class TourController : ControllerBase
     public ActionResult GetPaged([FromQuery] int guideId = 0, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string orderBy = "Name", [FromQuery] string orderDirection = "ASC")
     {
         if (guideId > 0)
+
         {
-            return Ok(_tourRepo.GetByGuide(guideId));
+            List<Tour> tours = _tourRepo.GetByGuide(guideId);
+            int totalCount = _tourRepo.CountAllByGuide(guideId);
+            Object result = new
+            {
+                Data = tours,
+                TotalCount = totalCount
+            };
+            return Ok(result);
         }
 
         // Validacija za orderBy i orderDirection
