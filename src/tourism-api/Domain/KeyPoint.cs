@@ -8,11 +8,10 @@ public class KeyPoint
     public string ImageUrl { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
-    public int TourId { get; set; }
 
     public bool IsValid()
     {
-        return Order > 0 && !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Description)
+        return Order >= 0 && !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Description)
             && !string.IsNullOrWhiteSpace(ImageUrl);
     }
 }
