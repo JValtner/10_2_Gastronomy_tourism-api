@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Data.Sqlite;
 using tourism_api.Domain;
 
 namespace tourism_api.Repositories;
@@ -221,7 +222,8 @@ public class TourRepository
                            kp.ImageUrl AS KeyPointImageUrl, kp.Latitude, kp.Longitude
                     FROM Tours t
                     INNER JOIN Users u ON t.GuideId = u.Id
-                    LEFT JOIN KeyPoints kp ON kp.TourId = t.Id
+                    LEFT JOIN TourKeypoints tkp on t.Id = tkp.TourId
+                    LEFT JOIN KeyPoints kp ON kp.Id = tkp.KeypointId
                     WHERE t.Id = @Id";
             using SqliteCommand command = new SqliteCommand(query, connection);
             command.Parameters.AddWithValue("@Id", id);
@@ -261,7 +263,6 @@ public class TourRepository
                         ImageUrl = reader["KeyPointImageUrl"].ToString(),
                         Latitude = Convert.ToInt32(reader["Latitude"]),
                         Longitude = Convert.ToInt32(reader["Longitude"]),
-                        TourId = Convert.ToInt32(reader["Id"])
                     };
                     tour.KeyPoints.Add(keyPoint);
                 }
@@ -407,4 +408,78 @@ public class TourRepository
             throw;
         }
     }
+
+    public bool AddKeypointTour(int tourId, int keyPointId)
+    {
+        try
+        {
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            string query = @"INSERT INTO TourKeypoints (KeyPointId, TourId) VALUES (@KeyPointId,@TourId);";
+            using SqliteCommand command = new SqliteCommand(query, connection);
+            command.Parameters.AddWithValue("@KeyPointId", keyPointId);
+            command.Parameters.AddWithValue("@TourId", tourId);
+
+
+            int rowsAffected = command.ExecuteNonQuery();
+
+            return rowsAffected > 0;
+        }
+        catch (SqliteException ex)
+        {
+            Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
+            throw;
+        }
+        catch (FormatException ex)
+        {
+            Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Neočekivana greška: {ex.Message}");
+            throw;
+        }
+    }
+
+    public bool RemoveKeypointTour(int tourId, int keyPointId)
+    {
+        try
+        {
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            string query = "DELETE FROM TourKeypoints WHERE KeyPointId = @KeyPointId AND TourId = @TourId";
+            using SqliteCommand command = new SqliteCommand(query, connection);
+            command.Parameters.AddWithValue("@KeyPointId", keyPointId);
+            command.Parameters.AddWithValue("@TourId", tourId);
+
+            int rowsAffected = command.ExecuteNonQuery();
+
+            return rowsAffected > 0;
+        }
+        catch (SqliteException ex)
+        {
+            Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Neočekivana greška: {ex.Message}");
+            throw;
+        }
+    }
+
+
 }

@@ -4,7 +4,7 @@ using tourism_api.Repositories;
 
 namespace tourism_api.Controllers;
 
-[Route("api/tours/{tourId}/key-points")]
+[Route("api/key-points")]
 [ApiController]
 public class KeyPointController : ControllerBase
 {
@@ -17,8 +17,31 @@ public class KeyPointController : ControllerBase
         _keyPointRepo = new KeyPointRepository(configuration);
     }
 
+    [HttpGet]
+    public ActionResult<KeyPoint> GetAll()
+    {
+
+        try
+        {
+            List<KeyPoint> keypoints = _keyPointRepo.GetAll();
+            if (keypoints.Count > 0)
+            {
+                return Ok(keypoints);
+            }
+            else
+            {
+                return NotFound("No keypoints in the colection");
+            }
+        }
+        catch (Exception ex)
+        {
+            return Problem("An error occurred while fetching keypoints.");
+        }
+    }
+
+
     [HttpPost]
-    public ActionResult<KeyPoint> Create(int tourId, [FromBody] KeyPoint newKeyPoint)
+    public ActionResult<KeyPoint> Create([FromBody] KeyPoint newKeyPoint)
     {
         if (!newKeyPoint.IsValid())
         {
@@ -27,13 +50,6 @@ public class KeyPointController : ControllerBase
 
         try
         {
-            Tour tour = _tourRepo.GetById(tourId);
-            if (tour == null)
-            {
-                return NotFound($"Tour with ID {tourId} not found.");
-            }
-
-            newKeyPoint.TourId = tourId;
             KeyPoint createdKeyPoint = _keyPointRepo.Create(newKeyPoint);
             return Ok(createdKeyPoint);
         }
@@ -44,16 +60,11 @@ public class KeyPointController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public ActionResult Delete(int tourId, int id)
+    public ActionResult Delete(int id)
     {
         try
         {
-            Tour tour = _tourRepo.GetById(tourId);
-            if (tour == null)
-            {
-                return NotFound($"Tour with ID {tourId} not found.");
-            }
-
+            
             bool isDeleted = _keyPointRepo.Delete(id);
             if (isDeleted)
             {
