@@ -35,7 +35,7 @@ public class KeyPointController : ControllerBase
         }
         catch (Exception ex)
         {
-            return Problem("An error occurred while fetching tours.");
+            return Problem("An error occurred while fetching keypoints.");
         }
     }
 
