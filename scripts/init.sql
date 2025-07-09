@@ -60,6 +60,20 @@ CREATE TABLE Users (
    Password TEXT,
    Role TEXT
 );
+
+DROP TABLE IF EXISTS "RestaurantReservations";
+CREATE TABLE RestaurantReservations (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    RestaurantId INTEGER NOT NULL,
+    UserId INTEGER NOT NULL,
+    ReservationDate DATE NOT NULL,
+    MealType TEXT NOT NULL CHECK (MealType IN ('dorucak', 'rucak', 'vecera')),
+    NumberOfGuests INTEGER NOT NULL CHECK (NumberOfGuests > 0),
+    Status TEXT NOT NULL DEFAULT 'pending' CHECK (Status IN ('pending', 'confirmed', 'cancelled')),
+    CreatedAt DATETIME NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (RestaurantId) REFERENCES Restaurants(Id) ON DELETE CASCADE,
+    FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
+);
 INSERT INTO "KeyPoints" ("Id","OrderPosition","Name","Description","ImageUrl","Latitude","Longitude") VALUES (4,1,'Petrovaradinska Tvrđava','Tvrđava sa prelepim pogledom na Novi Sad','https://example.com/petrovaradinska_tvrdjava.jpg',45.2461,19.8446),
  (5,2,'Zlatibor Priroda','Netaknuta priroda i staze na Zlatiboru','https://example.com/zlatibor_nature.jpg',43.7284,19.6089),
  (6,3,'Centar Novog Sada','Centar Novog Sada sa odličnim restoranima i prodavnicama','https://example.com/novi_sad_city.jpg',45.2671,19.8335),
@@ -125,4 +139,15 @@ INSERT INTO "Users" ("Id","Username","Password","Role") VALUES (1,'turista1','tu
  (10,'vodic1','vodic1','vodic'),
  (11,'vodic2','vodic2','vodic'),
  (12,'vodic3','vodic3','vodic');
+ INSERT INTO "RestaurantReservations" ("Id","RestaurantId","UserId","ReservationDate","MealType","NumberOfGuests","Status","CreatedAt") VALUES 
+(1, 1, 1, '2025-07-15', 'rucak', 4, 'confirmed', '2025-07-09 14:30:00'),
+(2, 2, 2, '2025-07-16', 'dorucak', 2, 'confirmed', '2025-07-09 09:15:00'),
+(3, 3, 3, '2025-07-17', 'vecera', 6, 'confirmed', '2025-07-09 16:45:00'),
+(4, 1, 4, '2025-07-18', 'rucak', 3, 'cancelled', '2025-07-09 11:20:00'),
+(5, 2, 5, '2025-07-19', 'dorucak', 2, 'confirmed', '2025-07-09 08:30:00'),
+(6, 3, 6, '2025-07-20', 'vecera', 4, 'confirmed', '2025-07-09 17:00:00'),
+(7, 4, 1, '2025-07-21', 'rucak', 5, 'confirmed', '2025-07-09 12:15:00'),
+(8, 5, 2, '2025-07-22', 'dorucak', 2, 'confirmed', '2025-07-09 07:45:00'),
+(9, 1, 3, '2025-07-23', 'vecera', 3, 'cancelled', '2025-07-09 18:30:00'),
+(10, 2, 4, '2025-07-24', 'rucak', 4, 'confirmed', '2025-07-09 13:20:00');
 COMMIT;
