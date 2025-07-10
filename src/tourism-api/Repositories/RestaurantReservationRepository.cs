@@ -94,6 +94,7 @@ public class RestaurantReservationRepository
                 INNER JOIN Restaurants r ON rr.RestaurantId = r.Id
                 INNER JOIN Users u ON rr.UserId = u.Id
                 WHERE rr.UserId = @UserId
+                AND rr.Status = 'confirmed'
                 ORDER BY rr.CreatedAt DESC";
 
             using SqliteCommand command = new SqliteCommand(query, connection);
@@ -299,7 +300,12 @@ public class RestaurantReservationRepository
 
             if (reader.Read())
             {
-                DateTime reservationDate = (DateTime)reader["ReservationDate"];
+                string reservationDateStr = reader["ReservationDate"].ToString();
+                if (!DateTime.TryParse(reservationDateStr, out DateTime reservationDate))
+                {
+                    Console.WriteLine("Nevalidan format datuma.");
+                    return false;
+                }
                 string mealType = reader["MealType"].ToString().ToLower();
                 DateTime currentDateTime = DateTime.Now;
 
