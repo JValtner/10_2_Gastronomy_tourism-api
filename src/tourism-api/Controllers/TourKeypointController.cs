@@ -19,7 +19,7 @@ public class TourKeypointController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<KeyPoint> Create(int tourId,int keyPointId)
+    public ActionResult<KeyPoints> Create(int tourId,int keyPointId)
     {
         if (keyPointId <=0 || tourId <= 0)
         {
@@ -29,7 +29,7 @@ public class TourKeypointController : ControllerBase
         try
         {
             Tour tour = _tourRepo.GetById(tourId);
-            KeyPoint keyPoint = _keyPointRepo.GetById(keyPointId);
+            KeyPoints keyPoint = _keyPointRepo.GetById(keyPointId);
 
             if (tour == null)
                 return NotFound($"Tour with ID {tourId} not found.");
@@ -60,7 +60,7 @@ public class TourKeypointController : ControllerBase
         try
         {
             Tour tour = _tourRepo.GetById(tourId);
-            KeyPoint keyPoint = _keyPointRepo.GetById(keyPointId);
+            KeyPoints keyPoint = _keyPointRepo.GetById(keyPointId);
 
             if (tour == null)
                 return NotFound($"Tour with ID {tourId} not found.");

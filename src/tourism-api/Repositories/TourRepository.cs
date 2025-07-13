@@ -116,9 +116,15 @@ public class TourRepository
             using SqliteConnection connection = new SqliteConnection(_connectionString);
             connection.Open();
 
-            string query = "SELECT COUNT(*) FROM Tours WHERE GuideId =@GuideId";
+            string query = @$"
+                    SELECT t.Id, t.Name, t.Description, t.DateTime, t.MaxGuests, t.Status,
+                           u.Id AS GuideId, u.Username 
+                    FROM Tours t 
+                    INNER JOIN Users u ON t.GuideId = u.Id
+                    WHERE GuideId =@GuideId";
             using SqliteCommand command = new SqliteCommand(query, connection);
             command.Parameters.AddWithValue("@GuideId", guideId);
+            
             return Convert.ToInt32(command.ExecuteScalar());
         }
         catch (SqliteException ex)
@@ -143,7 +149,7 @@ public class TourRepository
         }
     }
 
-    public List<Tour> GetByGuide(int guideId)
+    public List<Tour> GetByGuide(int guideId, int page, int pageSize, string orderBy, string orderDirection)
     {
         List<Tour> tours = new List<Tour>();
 
@@ -153,12 +159,17 @@ public class TourRepository
             connection.Open();
 
             string query = @$"
-                    SELECT t.Id, t.Name, t.Description, t.DateTime, t.MaxGuests, t.Status,
-                           u.Id AS GuideId, u.Username  
-                    FROM Tours t 
-                    INNER JOIN Users u ON t.GuideId = u.Id
-                    WHERE t.GuideId = @GuideId";
+            SELECT t.Id, t.Name, t.Description, t.DateTime, t.MaxGuests, t.Status,
+                   u.Id AS GuideId, u.Username 
+            FROM Tours t 
+            INNER JOIN Users u ON t.GuideId = u.Id
+            WHERE t.GuideId = @GuideId
+            ORDER BY {orderBy} {orderDirection} 
+            LIMIT @PageSize OFFSET @Offset";
+
             using SqliteCommand command = new SqliteCommand(query, connection);
+            command.Parameters.AddWithValue("@PageSize", pageSize);
+            command.Parameters.AddWithValue("@Offset", pageSize * (page - 1));
             command.Parameters.AddWithValue("@GuideId", guideId);
 
             using SqliteDataReader reader = command.ExecuteReader();
@@ -248,13 +259,13 @@ public class TourRepository
                             Id = Convert.ToInt32(reader["GuideId"]),
                             Username = reader["Username"].ToString()
                         },
-                        KeyPoints = new List<KeyPoint>()
+                        KeyPoints = new List<KeyPoints>()
                     };
                 }
 
                 if (reader["KeyPointId"] != DBNull.Value)
                 {
-                    KeyPoint keyPoint = new KeyPoint
+                    KeyPoints keyPoint = new KeyPoints
                     {
                         Id = Convert.ToInt32(reader["KeyPointId"]),
                         Order = Convert.ToInt32(reader["OrderPosition"]),
@@ -416,7 +427,9 @@ public class TourRepository
             using SqliteConnection connection = new SqliteConnection(_connectionString);
             connection.Open();
 
-            string query = @"INSERT INTO TourKeypoints (KeyPointId, TourId) VALUES (@KeyPointId,@TourId);";
+            string query = @"
+                            INSERT INTO TourKeypoints (KeyPointId, TourId) VALUES (@KeyPointId,@TourId);
+                            UPDATE Tours SET Status=""objavljeno"" where id=@TourId;";//Update tour status only if keypoint is added successfully
             using SqliteCommand command = new SqliteCommand(query, connection);
             command.Parameters.AddWithValue("@KeyPointId", keyPointId);
             command.Parameters.AddWithValue("@TourId", tourId);

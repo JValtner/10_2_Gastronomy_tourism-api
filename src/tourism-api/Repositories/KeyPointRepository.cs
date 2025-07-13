@@ -12,9 +12,9 @@ public class KeyPointRepository
         _connectionString = configuration["ConnectionString:SQLiteConnection"];
     }
 
-    public List<KeyPoint> GetAll()
+    public List<KeyPoints> GetAll()
     {
-        List<KeyPoint> keypoints = new List<KeyPoint>();
+        List<KeyPoints> keypoints = new List<KeyPoints>();
 
         try
         {
@@ -28,7 +28,7 @@ public class KeyPointRepository
 
             while (reader.Read())
             {
-                keypoints.Add(new KeyPoint
+                keypoints.Add(new KeyPoints
                 {
                     Id = Convert.ToInt32(reader["Id"]),
                     Order = Convert.ToInt32(reader["OrderPosition"]),
@@ -64,7 +64,7 @@ public class KeyPointRepository
             throw;
         }
     }
-    public KeyPoint GetById(int id)
+    public KeyPoints GetById(int id)
     {
         try
         {
@@ -79,7 +79,7 @@ public class KeyPointRepository
 
             if (reader.Read())
             {
-                return new KeyPoint
+                return new KeyPoints
                 {
                     Id = Convert.ToInt32(reader["Id"]),
                     Order = Convert.ToInt32(reader["OrderPosition"]),
@@ -115,7 +115,7 @@ public class KeyPointRepository
         }
     }
 
-    public KeyPoint Create(KeyPoint keyPoint)
+    public KeyPoints Create(KeyPoints keyPoint)
     {
         try
         {
@@ -191,4 +191,6 @@ public class KeyPointRepository
             throw;
         }
     }
+
+    
 }
