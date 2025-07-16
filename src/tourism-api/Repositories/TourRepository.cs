@@ -227,15 +227,23 @@ public class TourRepository
             connection.Open();
 
             string query = @"
-                    SELECT t.Id, t.Name, t.Description, t.DateTime, t.MaxGuests, t.Status,
-                           u.Id AS GuideId, u.Username,
-                           kp.Id AS KeyPointId, kp.OrderPosition, kp.Name AS KeyPointName, kp.Description AS KeyPointDescription, 
-                           kp.ImageUrl AS KeyPointImageUrl, kp.Latitude, kp.Longitude
-                    FROM Tours t
-                    INNER JOIN Users u ON t.GuideId = u.Id
-                    LEFT JOIN TourKeypoints tkp on t.Id = tkp.TourId
-                    LEFT JOIN KeyPoints kp ON kp.Id = tkp.KeypointId
-                    WHERE t.Id = @Id";
+            SELECT 
+                t.Id, t.Name, t.Description, t.DateTime, t.MaxGuests, t.Status,
+                u.Id AS GuideId, u.Username,
+                kp.Id AS KeyPointId, kp.OrderPosition, kp.Name AS KeyPointName, kp.Description AS KeyPointDescription,
+                kp.ImageUrl AS KeyPointImageUrl, kp.Latitude, kp.Longitude,
+                tr.Id AS ReservationId, tr.TourId AS ReservationTourId, tr.UserId AS ReservationUserId,
+                tr.NumberOfGuests, tr.CreatedOn,
+                tf.Id AS FeedbackId, tf.TourId AS FeedbackTourId, tf.UserId AS FeedbackUserId,
+                tf.UserRating, tf.UserComment, tf.PostedOn
+            FROM Tours t
+            INNER JOIN Users u ON t.GuideId = u.Id
+            LEFT JOIN TourKeypoints tkp ON t.Id = tkp.TourId
+            LEFT JOIN KeyPoints kp ON kp.Id = tkp.KeypointId
+            LEFT JOIN TourFeedbacks tf ON t.Id = tf.TourId
+            LEFT JOIN TourReservations tr ON t.Id = tr.TourId
+            WHERE t.Id = @Id";
+
             using SqliteCommand command = new SqliteCommand(query, connection);
             command.Parameters.AddWithValue("@Id", id);
 
@@ -259,23 +267,61 @@ public class TourRepository
                             Id = Convert.ToInt32(reader["GuideId"]),
                             Username = reader["Username"].ToString()
                         },
-                        KeyPoints = new List<KeyPoints>()
+                        KeyPoints = new List<KeyPoints>(),
+                        TourReservations = new List<TourReservations>(),
+                        TourFeedbacks = new List<TourFeedbacks>()
                     };
                 }
 
+                // Add KeyPoint if exists
                 if (reader["KeyPointId"] != DBNull.Value)
                 {
-                    KeyPoints keyPoint = new KeyPoints
+                    var keyPoint = new KeyPoints
                     {
                         Id = Convert.ToInt32(reader["KeyPointId"]),
                         Order = Convert.ToInt32(reader["OrderPosition"]),
                         Name = reader["KeyPointName"].ToString(),
                         Description = reader["KeyPointDescription"].ToString(),
                         ImageUrl = reader["KeyPointImageUrl"].ToString(),
-                        Latitude = Convert.ToInt32(reader["Latitude"]),
-                        Longitude = Convert.ToInt32(reader["Longitude"]),
+                        Latitude = Convert.ToDouble(reader["Latitude"]),
+                        Longitude = Convert.ToDouble(reader["Longitude"])
                     };
-                    tour.KeyPoints.Add(keyPoint);
+
+                    if (!tour.KeyPoints.Any(kp => kp.Id == keyPoint.Id))
+                        tour.KeyPoints.Add(keyPoint);
+                }
+
+                // Add Reservation if exists
+                if (reader["ReservationId"] != DBNull.Value)
+                {
+                    var reservation = new TourReservations
+                    {
+                        Id = Convert.ToInt32(reader["ReservationId"]),
+                        TourId = Convert.ToInt32(reader["ReservationTourId"]),
+                        UserId = Convert.ToInt32(reader["ReservationUserId"]),
+                        NumberOfGuests = Convert.ToInt32(reader["NumberOfGuests"]),
+                        CreatedOn = Convert.ToDateTime(reader["CreatedOn"])
+                    };
+
+                    if (!tour.TourReservations.Any(r => r.Id == reservation.Id))
+                        tour.TourReservations.Add(reservation);
+                }
+
+                // Add Feedback if exists
+                if (reader["FeedbackId"] != DBNull.Value)
+                {
+                    var feedback = new TourFeedbacks
+                    {
+                        Id = Convert.ToInt32(reader["FeedbackId"]),
+                        TourId = Convert.ToInt32(reader["FeedbackTourId"]),
+                        UserId = Convert.ToInt32(reader["FeedbackUserId"]),
+                        UserRating = reader["UserRating"] != DBNull.Value ? Convert.ToInt32(reader["UserRating"]) : null,
+                        UserComment = reader["UserComment"]?.ToString(),
+                        PostedOn = Convert.ToDateTime(reader["PostedOn"])
+                    };
+
+                    if (!tour.TourFeedbacks.Any(f => f.Id == feedback.Id))
+                        tour.TourFeedbacks.Add(feedback);
                 }
             }
 
@@ -302,6 +348,7 @@ public class TourRepository
             throw;
         }
     }
+
 
     public Tour Create(Tour tour)
     {
