@@ -83,9 +83,13 @@ namespace tourism_api.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
+            TourReservations tourReservation = _tourReservationRepo.GetById(id);
+            if (!_tourReservationRepo.CheckCancelTime(tourReservation.TourId))
+            {
+                return Conflict("You cannot cancel the reservation less than 24 hours before the tour starts.");
+            }
             try
             {
-
                 bool isDeleted = _tourReservationRepo.Delete(id);
                 if (isDeleted)
                 {

@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Data.Sqlite;
 using tourism_api.Domain;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
@@ -45,6 +46,61 @@ namespace tourism_api.Repositories
             catch (SqliteException ex)
             {
                 Console.WriteLine($"Greška pri konekciji ili izvršavanju neispravnih SQL upita: {ex.Message}");
+                throw;
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Greška u konverziji podataka iz baze: {ex.Message}");
+                throw;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Konekcija nije otvorena ili je otvorena više puta: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Neočekivana greška: {ex.Message}");
+                throw;
+            }
+        }
+        public TourReservations GetById(int id)
+        {
+            TourReservations tourReservation = null;
+            try
+            {
+                using SqliteConnection connection = new SqliteConnection(_connectionString);
+                connection.Open();
+
+                string query = "SELECT Id,TourId,UserId, NumberOfGuests,CreatedOn FROM TourReservations;";
+                using SqliteCommand command = new SqliteCommand(query, connection);
+
+                using SqliteDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    if (tourReservation == null)
+                    {
+                        tourReservation = new TourReservations
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            TourId = Convert.ToInt32(reader["TourId"]),
+                            UserId = Convert.ToInt32(reader["UserId"]),
+                            NumberOfGuests = Convert.ToInt32(reader["NumberOfGuests"]),
+                            CreatedOn = Convert.ToDateTime(reader["CreatedOn"]),
+                        }; 
+                    }
+                }
+
+                if (tourReservation != null)
+                {
+                return tourReservation;
+                }
+                return null; // Not found
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"Greška pri konekciji ili SQL izvršenju: {ex.Message}");
                 throw;
             }
             catch (FormatException ex)
@@ -251,10 +307,20 @@ namespace tourism_api.Repositories
                     bookedGuests += reservation.NumberOfGuests;
                 }
 
-                return bookedGuests +guestReservation< maxGuests;
+                return bookedGuests +guestReservation<= maxGuests;
             }
 
             return false; // tour not found or no reservation data
+        }
+        public bool CheckCancelTime(int tourId)
+        {
+            Tour tour = _tourRepo.GetById(tourId);
+
+            if (tour.DateTime > DateTime.Now.AddHours(24) ||tour.DateTime < DateTime.Now)
+            {
+                return true; // OK to cancel
+            }
+            return false; // Too late to cancel
         }
 
     }
