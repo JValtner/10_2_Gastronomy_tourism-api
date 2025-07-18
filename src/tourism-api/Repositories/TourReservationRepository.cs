@@ -316,7 +316,7 @@ namespace tourism_api.Repositories
         {
             Tour tour = _tourRepo.GetById(tourId);
 
-            if (tour.DateTime > DateTime.Now.AddHours(24) ||tour.DateTime < DateTime.Now)
+            if (tour.DateTime > DateTime.Now.AddHours(24) ||tour.DateTime < DateTime.Now)//Can delete already ended tour reservations ??? 
             {
                 return true; // OK to cancel
             }

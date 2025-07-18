@@ -4,7 +4,7 @@ using tourism_api.Repositories;
 
 namespace tourism_api.Controllers
 {
-    [Route("api/tour_feedbacks")]
+    [Route("api/tour-feedbacks")]
     [ApiController]
     public class TourFeedbackController : ControllerBase
     {
