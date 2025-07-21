@@ -76,6 +76,7 @@ CREATE TABLE "TourReservations" (
 	"TourId"	INTEGER,
 	"UserId"	INTEGER,
 	"NumberOfGuests"	INTEGER,
+	"CreatedOn"	TEXT,
 	PRIMARY KEY("Id" AUTOINCREMENT),
 	FOREIGN KEY("TourId") REFERENCES "Tours"("Id") ON DELETE CASCADE,
 	FOREIGN KEY("UserId") REFERENCES "Users"("Id") ON DELETE CASCADE
@@ -169,6 +170,14 @@ INSERT INTO "TourKeypoints" ("KeypointId","TourId") VALUES (4,3),
  (11,7),
  (12,7),
  (39,7);
+INSERT INTO "TourReservations" ("Id","TourId","UserId","NumberOfGuests","CreatedOn") VALUES (6,2,1,5,'2025-07-15 20:15:23.112'),
+ (8,3,1,3,'2025-07-16 08:54:45.541'),
+ (9,3,1,3,'2025-07-16 08:56:04.837'),
+ (10,3,1,1,'2025-07-16 08:57:27.371'),
+ (11,3,1,1,'2025-07-16 09:35:13.475'),
+ (12,3,1,10,'2025-07-16 11:26:17.735'),
+ (13,3,1,4,'2025-07-16 11:41:23.27'),
+ (15,2,1,1,'2025-07-16 15:44:50.921');
 INSERT INTO "Tours" ("Id","Name","Description","DateTime","MaxGuests","Status","GuideId") VALUES (2,'Niška Istorijska Tura','Šetnja kroz istoriju Niša','2025-04-03 11:00:00',10,'objavljeno',12),
  (3,'Zemunski Obala Tura','Scenski obilazak uz reku u Zemunu Scenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u ZemunuScenski obilazak uz reku u Zemunu','2025-07-31 15:02:00',26,'objavljeno',10),
  (4,'Subotica Kulturna Tura','Istražite kulturnu baštinu Subotice Istražite kulturnu baštinu SuboticeIstražite kulturnu baštinu SuboticeIstražite kulturnu baštinu SuboticeIstražite kulturnu baštinu SuboticeIstražite kulturnu baštinu SuboticeIstražite kulturnu baštinu SuboticeIstražite kulturnu baštinu Subotice','2025-08-21 00:03:00',12,'objavljena',11),

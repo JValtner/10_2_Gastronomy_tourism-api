@@ -18,12 +18,12 @@ public class KeyPointController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<KeyPoint> GetAll()
+    public ActionResult<KeyPoints> GetAll()
     {
 
         try
         {
-            List<KeyPoint> keypoints = _keyPointRepo.GetAll();
+            List<KeyPoints> keypoints = _keyPointRepo.GetAll();
             if (keypoints.Count > 0)
             {
                 return Ok(keypoints);
@@ -39,9 +39,26 @@ public class KeyPointController : ControllerBase
         }
     }
 
+    [HttpGet("{id}")]
+    public ActionResult<Tour> GetById(int id)
+    {
+        try
+        {
+            KeyPoints keypoint = _keyPointRepo.GetById(id);
+            if (keypoint == null)
+            {
+                return NotFound($"Keypoint with ID {id} not found.");
+            }
+            return Ok(keypoint);
+        }
+        catch (Exception ex)
+        {
+            return Problem("An error occurred while fetching the keypoint.");
+        }
+    }
 
     [HttpPost]
-    public ActionResult<KeyPoint> Create([FromBody] KeyPoint newKeyPoint)
+    public ActionResult<KeyPoints> Create([FromBody] KeyPoints newKeyPoint)
     {
         if (!newKeyPoint.IsValid())
         {
@@ -50,7 +67,7 @@ public class KeyPointController : ControllerBase
 
         try
         {
-            KeyPoint createdKeyPoint = _keyPointRepo.Create(newKeyPoint);
+            KeyPoints createdKeyPoint = _keyPointRepo.Create(newKeyPoint);
             return Ok(createdKeyPoint);
         }
         catch (Exception ex)

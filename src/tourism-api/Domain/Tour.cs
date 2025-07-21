@@ -10,7 +10,9 @@ public class Tour
     public string? Status { get; set; } = "u pripremi";
     public User? Guide { get; set; }
     public int GuideId { get; set; }
-    public List<KeyPoint> KeyPoints { get; set; } = new List<KeyPoint>();
+    public List<TourFeedbacks> TourFeedbacks { get; set; } = new List<TourFeedbacks>();
+    public List<TourReservations> TourReservations { get; set; } = new List<TourReservations>();
+    public List<KeyPoints> KeyPoints { get; set; } = new List<KeyPoints>();
 
     public bool IsValid()
     {

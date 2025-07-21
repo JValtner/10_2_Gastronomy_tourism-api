@@ -23,7 +23,7 @@ public class TourController : ControllerBase
         if (guideId > 0)
 
         {
-            List<Tour> tours = _tourRepo.GetByGuide(guideId);
+            List<Tour> tours = _tourRepo.GetByGuide(guideId, page, pageSize, orderBy, orderDirection);
             int totalCount = _tourRepo.CountAllByGuide(guideId);
             Object result = new
             {
