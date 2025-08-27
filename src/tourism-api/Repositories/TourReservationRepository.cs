@@ -261,7 +261,6 @@ namespace tourism_api.Repositories
                 throw;
             }
         }
-
         public bool Delete(int id)
         {
             try
@@ -317,6 +316,16 @@ namespace tourism_api.Repositories
             Tour tour = _tourRepo.GetById(tourId);
 
             if (tour.DateTime > DateTime.Now.AddHours(24) ||tour.DateTime < DateTime.Now)//Can delete already ended tour reservations ??? 
+            {
+                return true; // OK to cancel
+            }
+            return false; // Too late to cancel
+        }
+        public bool CheckReservationTime(int tourId)
+        {
+            Tour tour = _tourRepo.GetById(tourId);
+
+            if (tour.DateTime < DateTime.Now)//If it's in the past, can't make reservation
             {
                 return true; // OK to cancel
             }

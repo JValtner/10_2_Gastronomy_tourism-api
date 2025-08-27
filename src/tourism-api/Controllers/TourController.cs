@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using tourism_api.Domain;
 using tourism_api.Repositories;
+using tourism_api.Service;
 
 namespace tourism_api.Controllers;
 
@@ -10,11 +11,13 @@ public class TourController : ControllerBase
 {
     private readonly TourRepository _tourRepo;
     private readonly UserRepository _userRepo;
+    private readonly tourService _tourService;
 
     public TourController(IConfiguration configuration)
     {
         _tourRepo = new TourRepository(configuration);
         _userRepo = new UserRepository(configuration);
+        _tourService = new tourService(configuration);
     }
 
     [HttpGet]
@@ -63,6 +66,30 @@ public class TourController : ControllerBase
         }
     }
 
+    [HttpGet("stats")]
+    public ActionResult GetByGuideAndDate(
+        [FromQuery] int guideId = 0,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        if (guideId <= 0)
+        {
+            return NotFound("Guide ID must be provided.");
+        }
+
+        DateTime start = startDate ?? DateTime.Now.AddMonths(-5);
+        DateTime end = endDate ?? DateTime.Now.AddMonths(5);
+
+        try
+        {
+            TourStats tourStats = _tourService.GetByUserAndDateRange(guideId, start, end);
+            return Ok(tourStats);
+        }
+        catch (Exception)
+        {
+            return Problem("An error occurred while fetching tours.");
+        }
+    }
     [HttpGet("{id}")]
     public ActionResult<Tour> GetById(int id)
     {
@@ -145,6 +172,36 @@ public class TourController : ControllerBase
         catch (Exception ex)
         {
             return Problem("An error occurred while deleting the tour.");
+        }
+    }
+
+    [HttpPost("{oldTourId}/clone-keypoints/{newTourId}")]
+    public ActionResult CloneKeypoints(int oldTourId, int newTourId)
+    {
+        if (oldTourId <= 0 || newTourId <= 0)
+            return BadRequest("Invalid tour IDs.");
+
+        try
+        {
+            Tour oldTour = _tourRepo.GetById(oldTourId);
+            Tour newTour = _tourRepo.GetById(newTourId);
+
+            if (oldTour == null)
+                return NotFound($"Old Tour with ID {oldTourId} not found.");
+            if (newTour == null)
+                return NotFound($"New Tour with ID {newTourId} not found.");
+
+            // Implement cloning logic in repository:
+            bool success = _tourService.CloneKeypointsFromOldToNew(oldTourId, newTourId);
+
+            if (success)
+                return Ok("Keypoints cloned successfully.");
+
+            return Problem("Failed to clone keypoints.");
+        }
+        catch (Exception ex)
+        {
+            return Problem($"An error occurred: {ex.Message}");
         }
     }
 }

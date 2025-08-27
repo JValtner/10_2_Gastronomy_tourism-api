@@ -68,7 +68,12 @@ namespace tourism_api.Controllers
             {
                 return Conflict("Tour is fully booked, no available space.");
             }
-            
+            //Check if tour is finished
+            if (_tourReservationRepo.CheckReservationTime(tourReservation.TourId))
+            {
+                return Conflict("Tour has already finished");
+            }
+
             try
             {
                 TourReservations createdTourReservation = _tourReservationRepo.Create(tourReservation);
